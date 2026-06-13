@@ -1,76 +1,247 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Order Tea</title>
+<title>Polayya Tea Stall</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+:root{
+    --bg:#0f0c09;
+    --card:#1a1510;
+    --gold:#c58b47;
+    --gold-light:#e4c08f;
+    --cream:#f2eadf;
+    --border:#3a2a18;
+    --green:#2f9e44;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
 body{
-    font-family: Arial, sans-serif;
-    margin:20px;
-    background:#f8f8f8;
+    background:var(--bg);
+    color:var(--cream);
+    min-height:100vh;
+    padding-bottom:100px;
+}
+
+.header{
+    background:#0b0907;
+    text-align:center;
+    padding:20px;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.logo{
+    font-size:40px;
+}
+
+.title{
+    font-size:32px;
+    font-weight:700;
+    letter-spacing:2px;
+}
+
+.subtitle{
+    color:var(--gold);
+    letter-spacing:5px;
+    font-size:16px;
+}
+
+.since{
+    color:#999;
+    font-size:12px;
+    margin-top:5px;
 }
 
 .container{
-    max-width:500px;
+    max-width:600px;
     margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:10px;
+    padding:15px;
 }
 
-h2{
+.table-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:15px;
     text-align:center;
+    margin-bottom:20px;
+}
+
+.table-card small{
+    color:#aaa;
+}
+
+#tableNo{
+    color:var(--gold-light);
+    font-size:24px;
+    font-weight:700;
+    margin-top:5px;
+}
+
+.section-title{
+    text-align:center;
+    color:var(--gold);
+    margin-bottom:15px;
 }
 
 .item{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:15px;
+    margin-bottom:12px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:10px 0;
-    border-bottom:1px solid #ddd;
+    box-shadow:0 4px 10px rgba(0,0,0,0.25);
+}
+
+.item-info{
+    display:flex;
+    flex-direction:column;
+}
+
+.item-name{
+    font-size:18px;
+    font-weight:600;
+}
+
+.item-price{
+    color:var(--gold-light);
+    margin-top:4px;
 }
 
 .qty{
     display:flex;
     align-items:center;
+    gap:10px;
 }
 
-button{
-    padding:5px 12px;
-    margin:0 5px;
+.qty button{
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    background:var(--gold);
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+}
+
+.qty button:active{
+    transform:scale(0.95);
+}
+
+.qty span{
+    min-width:25px;
+    text-align:center;
+    font-size:18px;
+    font-weight:600;
+}
+
+.bottom-bar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:#15110d;
+    border-top:1px solid var(--border);
+    padding:15px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.total-label{
+    font-size:13px;
+    color:#aaa;
+}
+
+.total-value{
+    color:var(--gold-light);
+    font-size:24px;
+    font-weight:bold;
 }
 
 #checkout{
-    width:100%;
-    padding:15px;
-    background:green;
+    background:var(--green);
     color:white;
     border:none;
-    margin-top:20px;
-    font-size:18px;
-    border-radius:6px;
+    padding:14px 22px;
+    border-radius:12px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
 }
+
+#checkout:active{
+    transform:scale(0.97);
+}
+
+.footer{
+    text-align:center;
+    margin-top:20px;
+    color:var(--gold);
+    font-style:italic;
+}
+
 </style>
 </head>
 
 <body>
 
+<div class="header">
+    <div class="logo">☕</div>
+    <div class="title">POLAYYA</div>
+    <div class="subtitle">TEA STALL</div>
+    <div class="since">SINCE 1985</div>
+</div>
+
 <div class="container">
 
-<h2>Tea Point Menu</h2>
+    <div class="table-card">
+        <small>SERVING</small>
+        <div id="tableNo"></div>
+    </div>
 
-<h3 id="tableNo"></h3>
+    <h3 class="section-title">Our Menu</h3>
 
-<div id="menu"></div>
+    <div id="menu"></div>
 
-<h3>Total: ₹<span id="total">0</span></h3>
+    <div class="footer">
+        Ek Chai... Hazaar Yaadein ☕
+    </div>
 
-<button id="checkout" onclick="placeOrder()">
-Place Order
-</button>
+</div>
+
+<div class="bottom-bar">
+
+    <div>
+        <div class="total-label">
+            Total Amount
+        </div>
+        <div class="total-value">
+            ₹<span id="total">0</span>
+        </div>
+    </div>
+
+    <button id="checkout" onclick="placeOrder()">
+        Place Order
+    </button>
 
 </div>
 
@@ -96,7 +267,7 @@ const params = new URLSearchParams(window.location.search);
 const table = params.get("table") || "Unknown";
 
 document.getElementById("tableNo").innerHTML =
-"Table : " + table;
+"Table " + table;
 
 const menuDiv = document.getElementById("menu");
 
@@ -109,14 +280,23 @@ const div=document.createElement("div");
 div.className="item";
 
 div.innerHTML=`
-<div>
-${item.name}<br>
+
+<div class="item-info">
+
+<div class="item-name">
+${item.name}
+</div>
+
+<div class="item-price">
 ₹${item.price}
 </div>
 
+</div>
+
 <div class="qty">
+
 <button onclick="changeQty('${item.name}',-1)">
--
+−
 </button>
 
 <span id="${item.name}">
@@ -126,7 +306,9 @@ ${item.name}<br>
 <button onclick="changeQty('${item.name}',1)">
 +
 </button>
+
 </div>
+
 `;
 
 menuDiv.appendChild(div);
@@ -140,7 +322,7 @@ cart[name]+=val;
 if(cart[name]<0)
 cart[name]=0;
 
-document.getElementById(name).innerText=
+document.getElementById(name).innerText =
 cart[name];
 
 calculateTotal();
@@ -151,17 +333,18 @@ function calculateTotal(){
 let total=0;
 
 menu.forEach(item=>{
-total+=cart[item.name]*item.price;
+total += cart[item.name] * item.price;
 });
 
-document.getElementById("total").innerText=
+document.getElementById("total").innerText =
 total;
 }
 
 function placeOrder(){
 
-let msg=`New Order\n\n`;
-msg+=`Table: ${table}\n\n`;
+let msg=`☕ POLAYYA TEA STALL\n\n`;
+
+msg += `Table: ${table}\n\n`;
 
 let total=0;
 let hasItems=false;
@@ -178,21 +361,25 @@ let lineTotal=qty*item.price;
 
 total+=lineTotal;
 
-msg+=`${item.name} x ${qty} = ₹${lineTotal}\n`;
+msg += `${item.name} x ${qty} = ₹${lineTotal}\n`;
+
 }
 });
 
 if(!hasItems){
+
 alert("Please select items");
+
 return;
 }
 
-msg+=`\nTotal = ₹${total}`;
+msg += `\nTotal = ₹${total}`;
 
-const url=
+const url =
 `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
 
 window.open(url,'_blank');
+
 }
 
 </script>
