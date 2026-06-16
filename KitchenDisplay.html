@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Polayya Kitchen Dashboard</title>
+
+<style>
+
+body{
+    background:#111;
+    color:white;
+    font-family:Poppins,sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.card{
+    background:#222;
+    border-radius:14px;
+    margin-bottom:12px;
+    overflow:hidden;
+    border:1px solid #333;
+}
+
+.header{
+    background:#333;
+    padding:16px;
+    cursor:pointer;
+    font-weight:bold;
+    display:flex;
+    justify-content:space-between;
+}
+
+.details{
+    display:none;
+    padding:15px;
+}
+
+.item{
+    margin:6px 0;
+}
+
+.buttons{
+    margin-top:15px;
+}
+
+button{
+    border:none;
+    padding:10px 14px;
+    border-radius:8px;
+    margin-right:8px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.preparing{
+    background:#f59f00;
+    color:white;
+}
+
+.ready{
+    background:#228be6;
+    color:white;
+}
+
+.served{
+    background:#2f9e44;
+    color:white;
+}
+
+.status{
+    color:#aaa;
+    font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>☕ Pending Orders</h1>
+
+<div id="orders"></div>
+
+<script>
+
+const api =
+"https://script.google.com/macros/s/AKfycbxV_4fW6Af9jdwBe_zX_2pdUAGsSdVzD2yyU1TIUCs39nRzDGdN8kVWvlGM9-PsbZVB/exec";
+
+async function loadOrders(){
+
+    try{
+
+        const response =
+            await fetch(api + "?action=orders");
+
+        const orders =
+            await response.json();
+
+        const container =
+            document.getElementById("orders");
+
+        container.innerHTML = "";
+
+        orders.forEach(order => {
+
+            const card =
+                document.createElement("div");
+
+            card.className = "card";
+
+            card.innerHTML = `
+
+            <div class="header"
+                 onclick="toggle(this)">
+
+                <span>
+                    ${order.orderId}
+                </span>
+
+                <span>
+                    Table ${order.table}
+                </span>
+
+            </div>
+
+            <div class="details">
+
+                <div class="status">
+                    Status: ${order.status}
+                </div>
+
+                ${order.tea ? `<div class="item">Tea × ${order.tea}</div>` : ""}
+                ${order.coffee ? `<div class="item">Coffee × ${order.coffee}</div>` : ""}
+                ${order.lemonTea ? `<div class="item">Lemon Tea × ${order.lemonTea}</div>` : ""}
+                ${order.greenTea ? `<div class="item">Green Tea × ${order.greenTea}</div>` : ""}
+                ${order.horlicks ? `<div class="item">Horlicks × ${order.horlicks}</div>` : ""}
+                ${order.boost ? `<div class="item">Boost × ${order.boost}</div>` : ""}
+                ${order.elaichiTea ? `<div class="item">Elaichi Tea × ${order.elaichiTea}</div>` : ""}
+                ${order.gingerTea ? `<div class="item">Ginger Tea × ${order.gingerTea}</div>` : ""}
+                ${order.sonthiCoffee ? `<div class="item">Sonthi Coffee × ${order.sonthiCoffee}</div>` : ""}
+
+                <div class="buttons">
+
+                    <button class="preparing"
+                      onclick="updateStatus('${order.orderId}','Preparing')">
+                      Preparing
+                    </button>
+
+                    <button class="ready"
+                      onclick="updateStatus('${order.orderId}','Ready')">
+                      Ready
+                    </button>
+
+                    <button class="served"
+                      onclick="confirmServed('${order.orderId}')">
+                      Served
+                    </button>
+                </div>
+
+            </div>
+            `;
+
+            container.appendChild(card);
+        });
+
+    }catch(err){
+
+        console.error(err);
+    }
+}
+
+function toggle(el){
+
+    const details =
+        el.nextElementSibling;
+
+    details.style.display =
+        details.style.display === "block"
+        ? "none"
+        : "block";
+}
+
+async function updateStatus(orderId,status){
+
+    await fetch(api,{
+        method:"POST",
+        mode:"no-cors",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            action:"updateStatus",
+            orderId:orderId,
+            status:status
+        })
+    });
+
+    setTimeout(loadOrders,1000);
+}
+
+async function confirmServed(orderId){
+
+    const confirmed = confirm(
+        "Mark this order as SERVED?\n\nThis order will be removed from the pending orders list."
+    );
+
+    if(!confirmed){
+        return;
+    }
+
+    await updateStatus(orderId,"Served");
+}
+
+loadOrders();
+
+setInterval(loadOrders,10000);
+
+</script>
+<div id="confirmModal" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.7);
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div style="
+background:#222;
+padding:25px;
+border-radius:12px;
+width:90%;
+max-width:350px;
+text-align:center;
+">
+
+<h3>Confirm Order Served</h3>
+
+<p>
+This order will be removed from the pending list.
+</p>
+
+<button
+id="confirmYes"
+style="
+background:#2f9e44;
+color:white;
+padding:10px 20px;
+border:none;
+border-radius:8px;
+margin-right:10px;
+">
+Yes
+</button>
+
+<button
+onclick="closeModal()"
+style="
+background:#666;
+color:white;
+padding:10px 20px;
+border:none;
+border-radius:8px;
+">
+Cancel
+</button>
+
+</div>
+</div>
+</body>
+</html>
