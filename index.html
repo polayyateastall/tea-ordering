@@ -304,26 +304,26 @@ function calculateTotal(){
     document.getElementById("total").innerText = total;
 }
 
-async function placeOrder(){
+function placeOrder(){
 
-    let msg=`☕ POLAYYA TEA STALL\n\n`;
+    let msg = `☕ POLAYYA TEA STALL\n\n`;
 
     msg += `Table: ${table}\n\n`;
 
-    let total=0;
-    let hasItems=false;
+    let total = 0;
+    let hasItems = false;
 
-    menu.forEach(item=>{
+    menu.forEach(item => {
 
-        let qty=cart[item.name];
+        let qty = cart[item.name];
 
-        if(qty>0){
+        if(qty > 0){
 
-            hasItems=true;
+            hasItems = true;
 
-            let lineTotal=qty*item.price;
+            let lineTotal = qty * item.price;
 
-            total+=lineTotal;
+            total += lineTotal;
 
             msg += `${item.name} x ${qty} = ₹${lineTotal}\n`;
         }
@@ -332,7 +332,6 @@ async function placeOrder(){
     if(!hasItems){
 
         alert("Please select items");
-
         return;
     }
 
@@ -342,50 +341,43 @@ async function placeOrder(){
 
         table: table,
 
-        tea: cart["Tea"],
-        coffee: cart["Coffee"],
-        lemonTea: cart["Lemon Tea"],
-        greenTea: cart["Green Tea"],
-        horlicks: cart["Horlicks"],
-        boost: cart["Boost"],
-        elaichiTea: cart["Elaichi Tea"],
-        gingerTea: cart["Ginger Tea"],
-        sonthiCoffee: cart["Sonthi Coffee"]
+        tea: cart["Tea"] || 0,
+        coffee: cart["Coffee"] || 0,
+        lemonTea: cart["Lemon Tea"] || 0,
+        greenTea: cart["Green Tea"] || 0,
+        horlicks: cart["Horlicks"] || 0,
+        boost: cart["Boost"] || 0,
+        elaichiTea: cart["Elaichi Tea"] || 0,
+        gingerTea: cart["Ginger Tea"] || 0,
+        sonthiCoffee: cart["Sonthi Coffee"] || 0
 
     };
 
-    try {
+    console.log("Sending order:", orderData);
 
-        const response = await fetch(sheetURL, {
+    // Save to Google Sheet
+    fetch(sheetURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(() => {
+        console.log("Sheet request sent");
+    })
+    .catch(err => {
+        console.error("Sheet error:", err);
+    });
 
-            method: "POST",
+    // Open WhatsApp immediately
+    const whatsappURL =
+    `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
 
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify(orderData)
-
-        });
-
-        if(!response.ok){
-            throw new Error("Failed to save order");
-        }
-
-        const whatsappURL =
-        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
-
-        window.open(whatsappURL,'_blank');
-
-    } catch(error){
-
-        console.error(error);
-
-        alert(
-            "Order could not be saved to Google Sheet. Please try again."
-        );
-    }
+    window.open(whatsappURL, '_blank');
 }
+
 </script>
 
 </body>
