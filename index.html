@@ -261,6 +261,8 @@ const menu = [
 
 const whatsappNumber = "918121944510";
 
+const sheetURL =
+"https://script.google.com/macros/s/AKfycby5mDypoSHdCTmpZyznyzJkT3Ttit9J8NFcVnHPf-U1JhVt86xduE2sgD1VTCDA8whl/exec";
 const cart = {};
 
 const params = new URLSearchParams(window.location.search);
@@ -340,48 +342,88 @@ document.getElementById("total").innerText =
 total;
 }
 
-function placeOrder(){
+async function placeOrder(){
 
-let msg=`☕ POLAYYA TEA STALL\n\n`;
+    let msg=`☕ POLAYYA TEA STALL\n\n`;
 
-msg += `Table: ${table}\n\n`;
+    msg += `Table: ${table}\n\n`;
 
-let total=0;
-let hasItems=false;
+    let total=0;
+    let hasItems=false;
 
-menu.forEach(item=>{
+    menu.forEach(item=>{
 
-let qty=cart[item.name];
+        let qty=cart[item.name];
 
-if(qty>0){
+        if(qty>0){
 
-hasItems=true;
+            hasItems=true;
 
-let lineTotal=qty*item.price;
+            let lineTotal=qty*item.price;
 
-total+=lineTotal;
+            total+=lineTotal;
 
-msg += `${item.name} x ${qty} = ₹${lineTotal}\n`;
+            msg += `${item.name} x ${qty} = ₹${lineTotal}\n`;
+        }
+    });
 
-}
-});
+    if(!hasItems){
 
-if(!hasItems){
+        alert("Please select items");
 
-alert("Please select items");
+        return;
+    }
 
-return;
-}
+    msg += `\nTotal = ₹${total}`;
 
-msg += `\nTotal = ₹${total}`;
+    const orderData = {
 
-const url =
-`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+        table: table,
 
-window.open(url,'_blank');
+        tea: cart["Tea"],
+        coffee: cart["Coffee"],
+        lemonTea: cart["Lemon Tea"],
+        greenTea: cart["Green Tea"],
+        horlicks: cart["Horlicks"],
+        boost: cart["Boost"],
+        elaichiTea: cart["Elaichi Tea"],
+        gingerTea: cart["Ginger Tea"],
+        sonthiCoffee: cart["Sonthi Coffee"]
 
-}
+    };
 
+    try {
+
+        const response = await fetch(sheetURL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(orderData)
+
+        });
+
+        if(!response.ok){
+            throw new Error("Failed to save order");
+        }
+
+        const whatsappURL =
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+
+        window.open(whatsappURL,'_blank');
+
+    } catch(error){
+
+        console.error(error);
+
+        alert(
+            "Order could not be placed. Please try again."
+        );
+    }
+}	
 </script>
 
 </body>
