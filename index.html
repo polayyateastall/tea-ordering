@@ -239,6 +239,9 @@ const menu = [
 
 const whatsappNumber = "918121944510";
 
+const sheetURL =
+"https://script.google.com/macros/s/AKfycbycbF9WrfBzwmuSfevdQnJ_wcI6Wo0lnimwJt_krUNxV-sS7Sk6PDn4ENB1SzeHFSeV/exec";
+
 const cart = {};
 
 const params = new URLSearchParams(window.location.search);
@@ -301,43 +304,88 @@ function calculateTotal(){
     document.getElementById("total").innerText = total;
 }
 
-function placeOrder(){
+async function placeOrder(){
 
-    let msg = `☕ New Order\n\n`;
+    let msg=`☕ POLAYYA TEA STALL\n\n`;
+
     msg += `Table: ${table}\n\n`;
 
-    let total = 0;
-    let hasItems = false;
+    let total=0;
+    let hasItems=false;
 
     menu.forEach(item=>{
 
-        let qty = cart[item.name];
+        let qty=cart[item.name];
 
-        if(qty > 0){
+        if(qty>0){
 
-            hasItems = true;
+            hasItems=true;
 
-            let lineTotal = qty * item.price;
+            let lineTotal=qty*item.price;
 
-            total += lineTotal;
+            total+=lineTotal;
 
             msg += `${item.name} x ${qty} = ₹${lineTotal}\n`;
         }
     });
 
     if(!hasItems){
+
         alert("Please select items");
+
         return;
     }
 
     msg += `\nTotal = ₹${total}`;
 
-    const url =
-    `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+    const orderData = {
 
-    window.open(url,'_blank');
+        table: table,
+
+        tea: cart["Tea"],
+        coffee: cart["Coffee"],
+        lemonTea: cart["Lemon Tea"],
+        greenTea: cart["Green Tea"],
+        horlicks: cart["Horlicks"],
+        boost: cart["Boost"],
+        elaichiTea: cart["Elaichi Tea"],
+        gingerTea: cart["Ginger Tea"],
+        sonthiCoffee: cart["Sonthi Coffee"]
+
+    };
+
+    try {
+
+        const response = await fetch(sheetURL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(orderData)
+
+        });
+
+        if(!response.ok){
+            throw new Error("Failed to save order");
+        }
+
+        const whatsappURL =
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+
+        window.open(whatsappURL,'_blank');
+
+    } catch(error){
+
+        console.error(error);
+
+        alert(
+            "Order could not be saved to Google Sheet. Please try again."
+        );
+    }
 }
-
 </script>
 
 </body>
