@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Tea Point Menu</title>
+<title>Polayya Tea Stall</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -126,9 +126,13 @@ body{
     border:none;
     border-radius:50%;
     background:var(--gold);
-    color:#fff;
+    color:white;
     font-size:20px;
     cursor:pointer;
+}
+
+.qty button:active{
+    transform:scale(.95);
 }
 
 .qty span{
@@ -173,6 +177,12 @@ body{
     cursor:pointer;
 }
 
+.loading{
+    text-align:center;
+    padding:30px;
+    color:var(--gold);
+}
+
 .footer{
     text-align:center;
     margin-top:20px;
@@ -200,7 +210,9 @@ body{
 
     <h3 class="section-title">Our Menu</h3>
 
-    <div id="menu"></div>
+    <div id="menu">
+        <div class="loading">Loading menu...</div>
+    </div>
 
     <div class="footer">
         Fresh Tea Served With Love ☕
@@ -211,7 +223,9 @@ body{
 <div class="bottom-bar">
 
     <div>
-        <div class="total-label">Total Amount</div>
+        <div class="total-label">
+            Total Amount
+        </div>
         <div class="total-value">
             ₹<span id="total">0</span>
         </div>
@@ -225,70 +239,139 @@ body{
 
 <script>
 
-const menu = [
-    {name:"Tea",price:23},
-    {name:"Coffee",price:33},
-    {name:"Lemon Tea",price:23},
-    {name:"Green Tea",price:23},
-    {name:"Horlicks",price:29},
-    {name:"Boost",price:29},
-    {name:"Elaichi Tea",price:23},
-    {name:"Ginger Tea",price:23},
-    {name:"Sonthi Coffee",price:34}
-];
+const stockURL =
+"https://script.google.com/macros/s/AKfycbyQsbbVeX8TRWIjsE5JXpb5eU7xlVBF2Duy1YZFRF60KlxIwRGBj2aBzFo2Mh6AzTgv/exec?action=stock";
+
+const orderURL =
+"https://script.google.com/macros/s/AKfycbyQsbbVeX8TRWIjsE5JXpb5eU7xlVBF2Duy1YZFRF60KlxIwRGBj2aBzFo2Mh6AzTgv/exec";
 
 const whatsappNumber = "918121944510";
 
-const sheetURL =
-"https://script.google.com/macros/s/AKfycbyEk9pD0bXR9e-UrOyAXFLHz7likIswc4bG7l-AER7XgLywtNHhm2N2p60NPiKfBJI/exec";
-
+let menu = [];
+let stockMap = {};
 const cart = {};
 
-const params = new URLSearchParams(window.location.search);
-const table = params.get("table") || "Unknown";
+const params =
+new URLSearchParams(window.location.search);
+
+const table =
+params.get("table") || "Unknown";
 
 document.getElementById("tableNo").innerText =
 "Table " + table;
 
-const menuDiv = document.getElementById("menu");
+async function loadMenu(){
 
-menu.forEach(item => {
+    try{
 
-    cart[item.name] = 0;
+        const response =
+        await fetch(stockURL);
 
-    const div = document.createElement("div");
+        const data =
+        await response.json();
 
-    div.className = "item";
+        menu = data.filter(item =>
+            String(item.available).toLowerCase() === "yes"
+            && Number(item.qty) > 0
+        );
 
-    div.innerHTML = `
-        <div class="item-info">
-            <div class="item-name">${item.name}</div>
-            <div class="item-price">₹${item.price}</div>
-        </div>
+        const menuDiv =
+        document.getElementById("menu");
 
-        <div class="qty">
-            <button onclick="changeQty('${item.name}',-1)">−</button>
+        menuDiv.innerHTML = "";
 
-            <span id="${item.name.replace(/\s/g,'_')}">0</span>
+        menu.forEach(item => {
 
-            <button onclick="changeQty('${item.name}',1)">+</button>
-        </div>
-    `;
+            cart[item.item] = 0;
 
-    menuDiv.appendChild(div);
+            stockMap[item.item] =
+            Number(item.qty);
 
-});
+            const id =
+            item.item.replace(/\s+/g,"_");
+
+            const div =
+            document.createElement("div");
+
+            div.className = "item";
+
+            div.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">
+                        ${item.item}
+                    </div>
+                    <div class="item-price">
+                        ₹${item.price}
+                    </div>
+                </div>
+
+                <div class="qty">
+
+                    <button onclick="changeQty('${item.item}',-1)">
+                        −
+                    </button>
+
+                    <span id="${id}">
+                        0
+                    </span>
+
+                    <button onclick="changeQty('${item.item}',1)">
+                        +
+                    </button>
+
+                </div>
+            `;
+
+            menuDiv.appendChild(div);
+
+        });
+
+        if(menu.length === 0){
+
+            menuDiv.innerHTML =
+            `<div class="loading">
+                No items available
+            </div>`;
+        }
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById("menu").innerHTML =
+        `<div class="loading">
+            Unable to load menu
+        </div>`;
+    }
+}
 
 function changeQty(name,val){
 
-    cart[name] += val;
+    const maxQty =
+    stockMap[name] || 0;
 
-    if(cart[name] < 0)
-        cart[name] = 0;
+    let newQty =
+    cart[name] + val;
+
+    if(newQty < 0)
+        newQty = 0;
+
+    if(newQty > maxQty){
+
+        alert(
+            "Only " +
+            maxQty +
+            " available"
+        );
+
+        return;
+    }
+
+    cart[name] = newQty;
 
     document.getElementById(
-        name.replace(/\s/g,'_')
-    ).innerText = cart[name];
+        name.replace(/\s+/g,"_")
+    ).innerText = newQty;
 
     calculateTotal();
 }
@@ -297,86 +380,127 @@ function calculateTotal(){
 
     let total = 0;
 
-    menu.forEach(item=>{
-        total += cart[item.name] * item.price;
+    menu.forEach(item => {
+
+        total +=
+        cart[item.item] *
+        Number(item.price);
+
     });
 
-    document.getElementById("total").innerText = total;
+    document.getElementById("total").innerText =
+    total;
 }
 
-function placeOrder(){
+async function placeOrder(){
 
-    let msg = `☕ POLAYYA TEA STALL\n\n`;
-
-    msg += `Table: ${table}\n\n`;
+    let hasItems = false;
 
     let total = 0;
-    let hasItems = false;
+
+    const orderItems = {};
+
+    let whatsappMsg =
+    "☕ POLAYYA TEA STALL\n\n";
+
+    whatsappMsg +=
+    "Table: " + table + "\n\n";
 
     menu.forEach(item => {
 
-        let qty = cart[item.name];
+        const qty =
+        cart[item.item];
 
         if(qty > 0){
 
             hasItems = true;
 
-            let lineTotal = qty * item.price;
+            orderItems[item.item] =
+            qty;
+
+            const lineTotal =
+            qty * item.price;
 
             total += lineTotal;
 
-            msg += `${item.name} x ${qty} = ₹${lineTotal}\n`;
+            whatsappMsg +=
+            item.item +
+            " x " +
+            qty +
+            " = ₹" +
+            lineTotal +
+            "\n";
         }
     });
 
     if(!hasItems){
 
-        alert("Please select items");
+        alert(
+            "Please select items"
+        );
+
         return;
     }
 
-    msg += `\nTotal = ₹${total}`;
+    whatsappMsg +=
+    "\nTotal = ₹" + total;
 
-    const orderData = {
+    try{
 
-        table: table,
+        const response =
+        await fetch(orderURL,{
 
-        tea: cart["Tea"] || 0,
-        coffee: cart["Coffee"] || 0,
-        lemonTea: cart["Lemon Tea"] || 0,
-        greenTea: cart["Green Tea"] || 0,
-        horlicks: cart["Horlicks"] || 0,
-        boost: cart["Boost"] || 0,
-        elaichiTea: cart["Elaichi Tea"] || 0,
-        gingerTea: cart["Ginger Tea"] || 0,
-        sonthiCoffee: cart["Sonthi Coffee"] || 0
+            method:"POST",
 
-    };
+            headers:{
+                "Content-Type":
+                "application/json"
+            },
 
-    console.log("Sending order:", orderData);
+            body:JSON.stringify({
 
-    // Save to Google Sheet
-    fetch(sheetURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(orderData)
-    })
-    .then(() => {
-        console.log("Sheet request sent");
-    })
-    .catch(err => {
-        console.error("Sheet error:", err);
-    });
+                table:table,
 
-    // Open WhatsApp immediately
-    const whatsappURL =
-    `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+                items:orderItems
 
-    window.open(whatsappURL, '_blank');
+            })
+
+        });
+
+        const result =
+        await response.json();
+
+        if(!result.success){
+
+            alert(
+                result.message ||
+                "Order failed"
+            );
+
+            return;
+        }
+
+        const whatsappURL =
+        `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMsg)}`;
+
+        window.open(
+            whatsappURL,
+            "_blank"
+        );
+
+        location.reload();
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            "Failed to place order"
+        );
+    }
 }
+
+loadMenu();
 
 </script>
 
