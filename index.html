@@ -435,10 +435,7 @@ async function placeOrder(){
 
     if(!hasItems){
 
-        alert(
-            "Please select items"
-        );
-
+        alert("Please select items");
         return;
     }
 
@@ -447,25 +444,18 @@ async function placeOrder(){
 
     try{
 
+        const url =
+        orderURL +
+        "?action=placeOrder" +
+        "&table=" +
+        encodeURIComponent(table) +
+        "&items=" +
+        encodeURIComponent(
+            JSON.stringify(orderItems)
+        );
+
         const response =
-        await fetch(orderURL,{
-
-            method:"POST",
-
-            headers:{
-                "Content-Type":
-                "application/json"
-            },
-
-            body:JSON.stringify({
-
-                table:table,
-
-                items:orderItems
-
-            })
-
-        });
+        await fetch(url);
 
         const result =
         await response.json();
